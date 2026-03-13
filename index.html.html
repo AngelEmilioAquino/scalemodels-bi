@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SCALE MODELS S.A. — Business Intelligence</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#F4F6F9;
+  --surface:#FFFFFF;
+  --sidebar:#0F172A;
+  --sidebar-hover:#1E293B;
+  --accent:#2563EB;
+  --accent-light:#EFF6FF;
+  --green:#10B981;
+  --green-light:#ECFDF5;
+  --red:#EF4444;
+  --red-light:#FEF2F2;
+  --amber:#F59E0B;
+  --amber-light:#FFFBEB;
+  --purple:#8B5CF6;
+  --purple-light:#F5F3FF;
+  --text-primary:#0F172A;
+  --text-secondary:#64748B;
+  --text-muted:#94A3B8;
+  --border:#E2E8F0;
+  --shadow:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.05);
+  --shadow-md:0 4px 6px -1px rgba(0,0,0,.07),0 2px 4px -1px rgba(0,0,0,.05);
+  --shadow-lg:0 10px 15px -3px rgba(0,0,0,.08),0 4px 6px -2px rgba(0,0,0,.04);
+  --radius:10px;
+  --radius-sm:6px;
+}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text-primary);display:flex;height:100vh;overflow:hidden;font-size:13px}
+
+/* SIDEBAR */
+.sidebar{width:220px;min-width:220px;background:var(--sidebar);display:flex;flex-direction:column;height:100vh;overflow-y:auto}
+.sidebar-logo{padding:20px 18px 16px;border-bottom:1px solid rgba(255,255,255,.07)}
+.sidebar-logo .brand{font-size:14px;font-weight:800;color:#fff;letter-spacing:-.3px}
+.sidebar-logo .sub{font-size:10px;color:#64748B;margin-top:2px;text-transform:uppercase;letter-spacing:.8px}
+.sidebar-section{padding:18px 10px 6px}
+.sidebar-section-label{font-size:9px;text-transform:uppercase;letter-spacing:1.2px;color:#475569;padding:0 8px;margin-bottom:6px;font-weight:600}
+.nav-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:var(--radius-sm);cursor:pointer;transition:all .15s;color:#94A3B8;font-size:12.5px;font-weight:500;margin-bottom:2px}
+.nav-item:hover{background:var(--sidebar-hover);color:#fff}
+.nav-item.active{background:var(--accent);color:#fff}
+.nav-dot{width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.6;flex-shrink:0}
+.nav-item.active .nav-dot{opacity:1}
+
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+
+/* TOPBAR */
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;height:52px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.topbar-left{display:flex;align-items:center;gap:16px}
+.page-title{font-size:15px;font-weight:700;color:var(--text-primary)}
+.tabs{display:flex;gap:2px;background:var(--bg);border-radius:var(--radius-sm);padding:3px}
+.tab{padding:5px 14px;border-radius:4px;cursor:pointer;font-size:12px;font-weight:500;color:var(--text-secondary);transition:all .15s;white-space:nowrap}
+.tab.active{background:var(--surface);color:var(--text-primary);box-shadow:var(--shadow);font-weight:600}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.badge{background:var(--accent-light);color:var(--accent);font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px}
+.avatar{width:30px;height:30px;border-radius:4px;background:#1E293B;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:600;letter-spacing:.5px}
+
+/* CONTENT */
+.content{flex:1;overflow-y:auto;padding:20px 24px}
+.view{display:none}
+.view.active{display:block}
+
+/* KPI CARDS */
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px}
+.kpi-card{background:var(--surface);border-radius:var(--radius);padding:16px 18px;box-shadow:var(--shadow);border:1px solid var(--border)}
+.kpi-label{font-size:11px;color:var(--text-muted);font-weight:500;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px}
+.kpi-value{font-size:24px;font-weight:800;color:var(--text-primary);letter-spacing:-1px;line-height:1}
+.kpi-delta{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:600;margin-top:7px;padding:2px 7px;border-radius:20px}
+.kpi-delta.up{color:var(--green);background:var(--green-light)}
+.kpi-delta.down{color:var(--red);background:var(--red-light)}
+.kpi-delta.neutral{color:var(--amber);background:var(--amber-light)}
+
+/* CHARTS GRID */
+.charts-2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.charts-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px}
+.charts-1{display:grid;grid-template-columns:1fr;gap:14px;margin-bottom:14px}
+.chart-card{background:var(--surface);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);border:1px solid var(--border)}
+.chart-card.wide{grid-column:span 2}
+.chart-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.chart-title{font-size:13px;font-weight:700;color:var(--text-primary)}
+.chart-subtitle{font-size:11px;color:var(--text-muted);margin-top:2px}
+.chart-wrap{position:relative}
+.chart-wrap canvas{max-height:200px}
+.chart-wrap.tall canvas{max-height:260px}
+.chart-wrap.scatter canvas{max-height:240px}
+
+/* TABLE */
+.data-table{width:100%;border-collapse:collapse;font-size:12px}
+.data-table th{text-align:left;padding:9px 12px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text-muted);border-bottom:2px solid var(--border);background:var(--bg)}
+.data-table td{padding:9px 12px;border-bottom:1px solid var(--border);color:var(--text-primary)}
+.data-table tr:hover td{background:#F8FAFC}
+.pill{display:inline-block;padding:2px 9px;border-radius:20px;font-size:10px;font-weight:600}
+.pill-blue{background:var(--accent-light);color:var(--accent)}
+.pill-green{background:var(--green-light);color:var(--green)}
+.pill-purple{background:var(--purple-light);color:var(--purple)}
+.pill-amber{background:var(--amber-light);color:var(--amber)}
+.pill-red{background:var(--red-light);color:var(--red)}
+
+/* SCORE BAR */
+.score-bar-wrap{display:flex;align-items:center;gap:8px}
+.score-bar{flex:1;height:5px;background:var(--border);border-radius:3px;overflow:hidden}
+.score-bar-fill{height:100%;border-radius:3px;background:#2563EB}
+
+/* SECTION HEADER */
+.section-header{margin-bottom:14px}
+.section-title{font-size:16px;font-weight:800;color:var(--text-primary)}
+.section-desc{font-size:12px;color:var(--text-muted);margin-top:3px}
+
+/* STAR SCHEMA */
+.schema-wrap{display:flex;align-items:center;justify-content:center;padding:20px 0}
+.fact-box{background:#1E3A5F;color:#fff;border-radius:8px;padding:16px 20px;min-width:160px;text-align:center;box-shadow:var(--shadow-lg)}
+.fact-box .fact-title{font-size:11px;text-transform:uppercase;letter-spacing:1px;opacity:.7;margin-bottom:6px}
+.fact-box .fact-name{font-size:14px;font-weight:800}
+.fact-box .fact-fields{font-size:10px;opacity:.7;margin-top:8px;text-align:left;line-height:1.7}
+.dim-box{background:var(--surface);border:1.5px solid var(--border);border-radius:8px;padding:12px 16px;min-width:130px;box-shadow:var(--shadow)}
+.dim-box .dim-title{font-size:9px;text-transform:uppercase;letter-spacing:.8px;color:var(--accent);font-weight:700;margin-bottom:4px}
+.dim-box .dim-name{font-size:12px;font-weight:700;color:var(--text-primary)}
+.dim-box .dim-fields{font-size:10px;color:var(--text-secondary);margin-top:6px;line-height:1.7}
+.schema-grid{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:20px}
+.dims-left{display:flex;flex-direction:column;gap:14px;align-items:flex-end}
+.dims-right{display:flex;flex-direction:column;gap:14px;align-items:flex-start}
+.conn-line{width:40px;height:2px;background:var(--border);position:relative}
+.conn-line::after{content:'';position:absolute;right:-4px;top:-3px;width:8px;height:8px;border-radius:50%;background:var(--accent)}
+.conn-line.left::after{left:-4px;right:auto}
+
+/* CMI */
+.cmi-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.perspective-card{background:var(--surface);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);border:1px solid var(--border);border-top:3px solid var(--accent)}
+.perspective-card.fin{border-top-color:#10B981}
+.perspective-card.cli{border-top-color:#2563EB}
+.perspective-card.pro{border-top-color:#8B5CF6}
+.perspective-card.apr{border-top-color:#F59E0B}
+.persp-label{font-size:9px;text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:4px}
+.persp-label.fin{color:#10B981}
+.persp-label.cli{color:#2563EB}
+.persp-label.pro{color:#8B5CF6}
+.persp-label.apr{color:#F59E0B}
+.persp-title{font-size:14px;font-weight:800;margin-bottom:14px;color:var(--text-primary)}
+.kpi-row-small{display:flex;flex-direction:column;gap:8px}
+.kpi-item{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:var(--bg);border-radius:var(--radius-sm)}
+.kpi-item-name{font-size:11.5px;font-weight:500;color:var(--text-primary)}
+.kpi-item-val{font-size:12px;font-weight:700;color:var(--text-primary)}
+.kpi-item-trend{font-size:10px;font-weight:600;color:var(--green)}
+.kpi-item-trend.down{color:var(--red)}
+
+/* FILTER BAR */
+.filter-bar{display:flex;gap:8px;margin-bottom:16px;align-items:center;flex-wrap:wrap}
+.filter-select{padding:6px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-family:inherit;font-size:12px;color:var(--text-primary);background:var(--surface);cursor:pointer;outline:none}
+.filter-select:focus{border-color:var(--accent)}
+.filter-label{font-size:11px;color:var(--text-muted);font-weight:500}
+.count-badge{background:var(--bg);border:1px solid var(--border);padding:5px 12px;border-radius:var(--radius-sm);font-size:12px;font-weight:600;color:var(--text-secondary)}
+
+/* CLASSICMODELS */
+.cm-info-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:14px}
+.cm-info-card{background:var(--surface);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);border:1px solid var(--border);text-align:center}
+.cm-info-num{font-size:28px;font-weight:800;color:var(--accent);line-height:1}
+.cm-info-label{font-size:11px;color:var(--text-muted);margin-top:4px}
+.cm-table-wrap{overflow-x:auto}
+
+/* RESPONSIVE SCROLL only for content */
+.content::-webkit-scrollbar{width:4px}
+.content::-webkit-scrollbar-track{background:transparent}
+.content::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="sidebar-logo">
+    <div class="brand">SCALE MODELS S.A.</div>
+    <div class="sub">Business Intelligence</div>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Principal</div>
+    <div class="nav-item active" onclick="setView('overview',this)"><div class="nav-dot"></div> Overview</div>
+    <div class="nav-item" onclick="setView('customers',this)"><div class="nav-dot"></div> Clientes Kaggle</div>
+    <div class="nav-item" onclick="setView('professions',this)"><div class="nav-dot"></div> Profesiones</div>
+    <div class="nav-item" onclick="setView('demographics',this)"><div class="nav-dot"></div> Demografía</div>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Estrategia BI</div>
+    <div class="nav-item" onclick="setView('classicmodels',this)"><div class="nav-dot"></div> ClassicModels DB</div>
+    <div class="nav-item" onclick="setView('starschema',this)"><div class="nav-dot"></div> Modelo Estrella</div>
+    <div class="nav-item" onclick="setView('cmi',this)"><div class="nav-dot"></div> CMI / KPIs</div>
+  </div>
+  <div style="padding:18px 18px 10px;margin-top:auto;border-top:1px solid rgba(255,255,255,.07)">
+    <div style="font-size:10px;color:#475569;line-height:1.6">Fuentes de datos<br><span style="color:#64748B">Kaggle: 2,000 registros<br>classicmodels: MySQL</span></div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="page-title" id="pageTitle">Overview</div>
+      <div class="tabs" id="mainTabs">
+        <div class="tab active" onclick="setDataSource('kaggle',this)">Dataset Kaggle</div>
+        <div class="tab" onclick="setDataSource('sql',this)">ClassicModels SQL</div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="badge">2,000 registros</div>
+      <div style="font-size:11px;color:var(--text-muted)">Evaluación BI · 2025</div>
+      <div class="avatar">SM</div>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- ════════ VIEW: OVERVIEW ════════ -->
+    <div class="view active" id="view-overview">
+      <div class="section-header">
+        <div class="section-title">Overview General</div>
+        <div class="section-desc">Resumen ejecutivo de los KPIs principales del dataset de clientes</div>
+      </div>
+
+      <div class="kpi-row">
+        <div class="kpi-card">
+          <div class="kpi-label">Total Clientes</div>
+          <div class="kpi-value">2,000</div>
+          <div class="kpi-delta up">▲ Dataset completo</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Ingreso Promedio</div>
+          <div class="kpi-value">$110.7K</div>
+          <div class="kpi-delta up">▲ +12.4% objetivo</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Spending Score Avg</div>
+          <div class="kpi-value">51.0</div>
+          <div class="kpi-delta neutral">— Perfil neutro</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Clientes Alto Valor</div>
+          <div class="kpi-value">393</div>
+          <div class="kpi-delta up">▲ Score 81-100</div>
+        </div>
+      </div>
+
+      <div class="charts-2">
+        <div class="chart-card">
+          <div class="chart-header">
+            <div>
+              <div class="chart-title">Distribución Spending Score</div>
+              <div class="chart-subtitle">Por segmento de valor — 2,000 clientes</div>
+            </div>
+          </div>
+          <div class="chart-wrap">
+            <canvas id="chartScoreDist"></canvas>
+          </div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-header">
+            <div>
+              <div class="chart-title">Distribución por Género</div>
+              <div class="chart-subtitle">814 Masculino · 1,186 Femenino</div>
+            </div>
+          </div>
+          <div class="chart-wrap">
+            <canvas id="chartGender"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="charts-2">
+        <div class="chart-card">
+          <div class="chart-header">
+            <div>
+              <div class="chart-title">Clientes por Profesión</div>
+              <div class="chart-subtitle">Distribución de los 1,965 registros válidos</div>
+            </div>
+          </div>
+          <div class="chart-wrap tall">
+            <canvas id="chartProfCount"></canvas>
+          </div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-header">
+            <div>
+              <div class="chart-title">Distribución de Edad</div>
+              <div class="chart-subtitle">Segmentos etarios de la base de clientes</div>
+            </div>
+          </div>
+          <div class="chart-wrap tall">
+            <canvas id="chartAge"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════ VIEW: CUSTOMERS ════════ -->
+    <div class="view" id="view-customers">
+      <div class="section-header">
+        <div class="section-title">Análisis de Clientes — Dataset Kaggle</div>
+        <div class="section-desc">Income vs Spending Score · Segmentación por comportamiento de compra</div>
+      </div>
+
+      <div class="kpi-row">
+        <div class="kpi-card">
+          <div class="kpi-label">Ingreso Mín.</div>
+          <div class="kpi-value">$0</div>
+          <div class="kpi-delta down">▼ outlier detectado</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Ingreso Máx.</div>
+          <div class="kpi-value">$189K</div>
+          <div class="kpi-delta up">▲ segmento premium</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Score Alto (81-100)</div>
+          <div class="kpi-value">393</div>
+          <div class="kpi-delta up">▲ 19.7% del total</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Exp. Trabajo Avg</div>
+          <div class="kpi-value">3.8 años</div>
+          <div class="kpi-delta neutral">— perfil mid-career</div>
+        </div>
+      </div>
+
+      <div class="chart-card" style="margin-bottom:14px">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Income vs Spending Score — Scatter Plot</div>
+            <div class="chart-subtitle">Muestra representativa de 300 clientes · <span style="color:#2563EB">●</span> Femenino &nbsp;<span style="color:#F59E0B">●</span> Masculino</div>
+          </div>
+          <div style="font-size:11px;color:var(--text-muted)">Dim_Customer × Fact_Sales</div>
+        </div>
+        <div class="chart-wrap scatter">
+          <canvas id="chartScatter"></canvas>
+        </div>
+      </div>
+
+      <div class="charts-2">
+        <div class="chart-card">
+          <div class="chart-header">
+            <div>
+              <div class="chart-title">Income Promedio por Tamaño Familiar</div>
+              <div class="chart-subtitle">Relación familia-ingresos</div>
+            </div>
+          </div>
+          <div class="chart-wrap">
+            <canvas id="chartFamilyIncome"></canvas>
+          </div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-header">
+            <div>
+              <div class="chart-title">Spending Score por Tamaño Familiar</div>
+              <div class="chart-subtitle">Comportamiento de gasto según núcleo familiar</div>
+            </div>
+          </div>
+          <div class="chart-wrap">
+            <canvas id="chartFamilyScore"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════ VIEW: PROFESSIONS ════════ -->
+    <div class="view" id="view-professions">
+      <div class="section-header">
+        <div class="section-title">Análisis por Profesión</div>
+        <div class="section-desc">KPIs financieros y de comportamiento segmentados por ocupación — Dim_Profession</div>
+      </div>
+
+      <div class="charts-2" style="margin-bottom:14px">
+        <div class="chart-card">
+          <div class="chart-header">
+            <div>
+              <div class="chart-title">Ingreso Promedio por Profesión</div>
+              <div class="chart-subtitle">Annual Income ($) — datos reales Kaggle</div>
+            </div>
+          </div>
+          <div class="chart-wrap tall">
+            <canvas id="chartProfIncome"></canvas>
+          </div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-header">
+            <div>
+              <div class="chart-title">Spending Score por Profesión</div>
+              <div class="chart-subtitle">Comportamiento de gasto promedio (0-100)</div>
+            </div>
+          </div>
+          <div class="chart-wrap tall">
+            <canvas id="chartProfScore"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-title">Tabla Dim_Profession — Detalle completo</div>
+        </div>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>ProfessionID</th>
+              <th>Profesión</th>
+              <th>Clientes</th>
+              <th>Ingreso Promedio</th>
+              <th>Spending Score</th>
+              <th>% del Total</th>
+              <th>Score Visual</th>
+            </tr>
+          </thead>
+          <tbody id="profTable"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ════════ VIEW: DEMOGRAPHICS ════════ -->
+    <div class="view" id="view-demographics">
+      <div class="section-header">
+        <div class="section-title">Demografía & Segmentación</div>
+        <div class="section-desc">Análisis etario, experiencia laboral y distribución del cliente ideal — Dim_Customer</div>
+      </div>
+
+      <div class="kpi-row">
+        <div class="kpi-card">
+          <div class="kpi-label">Edad Promedio</div>
+          <div class="kpi-value">49.0</div>
+          <div class="kpi-delta neutral">— rango amplio</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Segmento 18-25</div>
+          <div class="kpi-value">507</div>
+          <div class="kpi-delta up">▲ 25.4% mayor grupo</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Segmento 66+</div>
+          <div class="kpi-value">627</div>
+          <div class="kpi-delta up">▲ 31.4% coleccionistas</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Exp. 0-1 año</div>
+          <div class="kpi-value">890</div>
+          <div class="kpi-delta neutral">▲ 44.5% sin exp. o juniors</div>
+        </div>
+      </div>
+
+      <div class="charts-2">
+        <div class="chart-card">
+          <div class="chart-header">
+            <div>
+              <div class="chart-title">Distribución por Rango de Edad</div>
+              <div class="chart-subtitle">Segmentos etarios — Dim_Customer</div>
+            </div>
+          </div>
+          <div class="chart-wrap tall">
+            <canvas id="chartAgeDemog"></canvas>
+          </div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-header">
+            <div>
+              <div class="chart-title">Experiencia Laboral</div>
+              <div class="chart-subtitle">Años de experiencia — Work Experience</div>
+            </div>
+          </div>
+          <div class="chart-wrap tall">
+            <canvas id="chartWorkExp"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-title">Segmentación Estratégica de Clientes</div>
+          <div class="chart-subtitle">Cuadrantes de valor basados en Income y Spending Score</div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;padding:8px 0">
+          <div style="background:#EFF6FF;border-radius:8px;padding:14px;border-left:3px solid #2563EB">
+            <div style="font-size:11px;font-weight:600;color:#2563EB;margin-bottom:6px">Alto Income · Alto Score</div>
+            <div style="font-size:22px;font-weight:800;color:#0F172A">~25%</div>
+            <div style="font-size:11px;color:#64748B;margin-top:4px">Clientes Premium — objetivo principal de Scale Models</div>
+          </div>
+          <div style="background:#ECFDF5;border-radius:8px;padding:14px;border-left:3px solid #10B981">
+            <div style="font-size:11px;font-weight:600;color:#10B981;margin-bottom:6px">Alto Income · Bajo Score</div>
+            <div style="font-size:22px;font-weight:800;color:#0F172A">~25%</div>
+            <div style="font-size:11px;color:#64748B;margin-top:4px">Clientes con Potencial — fidelización con marketing directo</div>
+          </div>
+          <div style="background:#FFFBEB;border-radius:8px;padding:14px;border-left:3px solid #F59E0B">
+            <div style="font-size:11px;font-weight:600;color:#F59E0B;margin-bottom:6px">Bajo Income · Alto Score</div>
+            <div style="font-size:22px;font-weight:800;color:#0F172A">~25%</div>
+            <div style="font-size:11px;color:#64748B;margin-top:4px">Clientes Entusiastas — alto engagement, menor capacidad</div>
+          </div>
+          <div style="background:#FEF2F2;border-radius:8px;padding:14px;border-left:3px solid #EF4444">
+            <div style="font-size:11px;font-weight:600;color:#EF4444;margin-bottom:6px">Bajo Income · Bajo Score</div>
+            <div style="font-size:22px;font-weight:800;color:#0F172A">~25%</div>
+            <div style="font-size:11px;color:#64748B;margin-top:4px">Bajo Valor Actual — campañas de activación necesarias</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════ VIEW: CLASSICMODELS ════════ -->
+    <div class="view" id="view-classicmodels">
+      <div class="section-header">
+        <div class="section-title">Base de Datos ClassicModels — Estructura SQL</div>
+        <div class="section-desc">Diagrama E-R · Tablas · Preguntas de negocio (fuente: mysqltutorial.org)</div>
+      </div>
+
+      <div class="cm-info-grid">
+        <div class="cm-info-card">
+          <div class="cm-info-num">8</div>
+          <div class="cm-info-label">Tablas en BD</div>
+        </div>
+        <div class="cm-info-card">
+          <div class="cm-info-num">110</div>
+          <div class="cm-info-label">Productos (SKUs)</div>
+        </div>
+        <div class="cm-info-card">
+          <div class="cm-info-num">122</div>
+          <div class="cm-info-label">Clientes activos</div>
+        </div>
+        <div class="cm-info-card">
+          <div class="cm-info-num">326</div>
+          <div class="cm-info-label">Pedidos 2003-2005</div>
+        </div>
+      </div>
+
+      <div class="charts-2" style="margin-bottom:14px">
+        <div class="chart-card">
+          <div class="chart-header">
+            <div>
+              <div class="chart-title">Pregunta 1 — Evolución de Ventas en el Tiempo</div>
+              <div class="chart-subtitle">Basada en tabla orders + payments (2003–2005)</div>
+            </div>
+          </div>
+          <div class="chart-wrap tall">
+            <canvas id="chartSalesEvol"></canvas>
+          </div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-header">
+            <div>
+              <div class="chart-title">Pregunta 2 — Ventas por Línea de Producto</div>
+              <div class="chart-subtitle">Basada en productlines + orderdetails</div>
+            </div>
+          </div>
+          <div class="chart-wrap tall">
+            <canvas id="chartProductLine"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-title">Tablas de la Base de Datos ClassicModels</div>
+          <div class="chart-subtitle">Estructura completa · 8 entidades relacionales</div>
+        </div>
+        <table class="data-table">
+          <thead>
+            <tr><th>Tabla</th><th>PK</th><th>Registros aprox.</th><th>Descripción</th><th>Rol en DW</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>productlines</strong></td><td>productLine</td><td>7</td><td>Líneas de producto (Classic Cars, Motorcycles…)</td><td><span class="pill pill-purple">Dimensión</span></td></tr>
+            <tr><td><strong>products</strong></td><td>productCode</td><td>110</td><td>Catálogo de SKUs con MSRP y stock</td><td><span class="pill pill-purple">Dimensión</span></td></tr>
+            <tr><td><strong>customers</strong></td><td>customerNumber</td><td>122</td><td>Datos de clientes y límite de crédito</td><td><span class="pill pill-purple">Dimensión</span></td></tr>
+            <tr><td><strong>employees</strong></td><td>employeeNumber</td><td>23</td><td>Estructura organizativa y ventas</td><td><span class="pill pill-purple">Dimensión</span></td></tr>
+            <tr><td><strong>offices</strong></td><td>officeCode</td><td>7</td><td>Ubicaciones de oficinas globales</td><td><span class="pill pill-purple">Dimensión</span></td></tr>
+            <tr><td><strong>orders</strong></td><td>orderNumber</td><td>326</td><td>Pedidos con fechas y estados</td><td><span class="pill pill-blue">Semi-Hecho</span></td></tr>
+            <tr><td><strong>orderdetails</strong></td><td>orderNumber+productCode</td><td>~2,996</td><td>Líneas de detalle con qty y precio</td><td><span class="pill pill-green">Tabla de Hechos</span></td></tr>
+            <tr><td><strong>payments</strong></td><td>customerNumber+checkNumber</td><td>~273</td><td>Transacciones de pago por cliente</td><td><span class="pill pill-green">Tabla de Hechos</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ════════ VIEW: STAR SCHEMA ════════ -->
+    <div class="view" id="view-starschema">
+      <div class="section-header">
+        <div class="section-title">Modelo Estrella — Star Schema</div>
+        <div class="section-desc">Diseño del Data Warehouse · Tipología justificada · Integración classicmodels + Kaggle</div>
+      </div>
+
+      <!-- SCHEMA KAGGLE -->
+      <div class="chart-card" style="margin-bottom:14px">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Esquema Estrella — Dataset Kaggle (Power BI)</div>
+            <div class="chart-subtitle">Tipología: Star Schema puro · Justificación: sin jerarquías complejas, consultas directas sobre Fact_Sales</div>
+          </div>
+          <div><span class="pill pill-blue">Star Schema</span></div>
+        </div>
+        <div class="schema-wrap">
+          <div class="schema-grid">
+            <div class="dims-left">
+              <div>
+                <div class="conn-line" style="margin-left:auto;margin-bottom:-8px"></div>
+                <div class="dim-box">
+                  <div class="dim-title">Dimensión</div>
+                  <div class="dim-name">Dim_Customer</div>
+                  <div class="dim-fields">🔑 CustomerID (PK)<br>— Gender<br>— Age<br>— Work Experience<br>— Family Size</div>
+                </div>
+              </div>
+              <div>
+                <div class="conn-line" style="margin-left:auto;margin-bottom:-8px"></div>
+                <div class="dim-box">
+                  <div class="dim-title">Dimensión</div>
+                  <div class="dim-name">Dim_Profession</div>
+                  <div class="dim-fields">🔑 ProfessionID (PK)<br>— Profession<br>(Healthcare, Engineer…)</div>
+                </div>
+              </div>
+            </div>
+            <div style="text-align:center">
+              <div class="fact-box">
+                <div class="fact-title">Tabla de Hechos</div>
+                <div class="fact-name">Fact_Sales</div>
+                <div class="fact-fields">FK CustomerID<br>FK ProfessionID<br>FK DateID<br>— Annual Income ($)<br>— Spending Score<br>— Work Experience<br>— Family Size<br><br>M: Ingresos Totales<br>M: Promedio de Gasto</div>
+              </div>
+            </div>
+            <div class="dims-right">
+              <div>
+                <div class="dim-box">
+                  <div class="dim-title">Dimensión</div>
+                  <div class="dim-name">Dim_Tiempo</div>
+                  <div class="dim-fields">🔑 DateID (PK)<br>— Año<br>— Mes / Mes Nro<br>— Trimestre</div>
+                </div>
+                <div class="conn-line left" style="margin-top:-8px"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div style="background:var(--bg);border-radius:var(--radius-sm);padding:12px 16px;margin-top:8px;font-size:12px;color:var(--text-secondary)">
+          <strong style="color:var(--text-primary)">Justificación Star Schema:</strong> Se eligió Star Schema puro sobre Snowflake por su menor complejidad de joins en Power BI DAX, mejor performance en DirectQuery, y porque las dimensiones (Profession, Customer) no presentan jerarquías que requieran normalización adicional. Óptimo para dashboards interactivos con slicers dinámicos.
+        </div>
+      </div>
+
+      <!-- SCHEMA SQL -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Esquema Estrella — ClassicModels SQL (Data Warehouse Ventas)</div>
+            <div class="chart-subtitle">Tipología: Star Schema · Fact_Ventas centraliza orderdetails + payments</div>
+          </div>
+          <div><span class="pill pill-green">Data Warehouse</span></div>
+        </div>
+        <div class="schema-wrap">
+          <div class="schema-grid">
+            <div class="dims-left">
+              <div>
+                <div class="conn-line" style="margin-left:auto;margin-bottom:-8px"></div>
+                <div class="dim-box">
+                  <div class="dim-title">Dimensión</div>
+                  <div class="dim-name">Dim_Producto</div>
+                  <div class="dim-fields">🔑 productCode (PK)<br>— productName<br>— productLine<br>— MSRP<br>— quantityInStock</div>
+                </div>
+              </div>
+              <div>
+                <div class="conn-line" style="margin-left:auto;margin-bottom:-8px"></div>
+                <div class="dim-box">
+                  <div class="dim-title">Dimensión</div>
+                  <div class="dim-name">Dim_Cliente</div>
+                  <div class="dim-fields">🔑 customerNumber (PK)<br>— customerName<br>— country / city<br>— creditLimit</div>
+                </div>
+              </div>
+            </div>
+            <div style="text-align:center">
+              <div class="fact-box">
+                <div class="fact-title">Tabla de Hechos</div>
+                <div class="fact-name">Fact_Ventas</div>
+                <div class="fact-fields">FK productCode<br>FK customerNumber<br>FK employeeNumber<br>FK DateID<br>— orderNumber<br>— quantityOrdered<br>— priceEach<br>— amount (payment)<br><br>M: Total Ventas<br>M: Unidades Vendidas<br>M: Margen Bruto</div>
+              </div>
+            </div>
+            <div class="dims-right">
+              <div>
+                <div class="dim-box">
+                  <div class="dim-title">Dimensión</div>
+                  <div class="dim-name">Dim_Tiempo</div>
+                  <div class="dim-fields">🔑 DateID (PK)<br>— Año / Mes / Día<br>— Trimestre<br>— Semana</div>
+                </div>
+                <div class="conn-line left" style="margin-top:-8px"></div>
+              </div>
+              <div>
+                <div class="dim-box">
+                  <div class="dim-title">Dimensión</div>
+                  <div class="dim-name">Dim_Empleado</div>
+                  <div class="dim-fields">🔑 employeeNumber (PK)<br>— firstName / lastName<br>— jobTitle<br>— officeCode</div>
+                </div>
+                <div class="conn-line left" style="margin-top:-8px"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════ VIEW: CMI ════════ -->
+    <div class="view" id="view-cmi">
+      <div class="section-header">
+        <div class="section-title">Cuadro de Mando Integral (CMI)</div>
+        <div class="section-desc">4 Perspectivas BSC · 16 KPIs estratégicos · Horizonte 2026-2040</div>
+      </div>
+
+      <div class="kpi-row" style="margin-bottom:18px">
+        <div class="kpi-card" style="border-top:3px solid #10B981">
+          <div class="kpi-label">Perspectiva Financiera</div>
+          <div class="kpi-value" style="color:#10B981">4 KPIs</div>
+          <div class="kpi-delta up">▲ Crecimiento ingresos</div>
+        </div>
+        <div class="kpi-card" style="border-top:3px solid #2563EB">
+          <div class="kpi-label">Perspectiva Clientes</div>
+          <div class="kpi-value" style="color:#2563EB">4 KPIs</div>
+          <div class="kpi-delta up">▲ Satisfacción 85%</div>
+        </div>
+        <div class="kpi-card" style="border-top:3px solid #8B5CF6">
+          <div class="kpi-label">Perspectiva Procesos</div>
+          <div class="kpi-value" style="color:#8B5CF6">4 KPIs</div>
+          <div class="kpi-delta neutral">— Eficiencia productiva</div>
+        </div>
+        <div class="kpi-card" style="border-top:3px solid #F59E0B">
+          <div class="kpi-label">Aprendizaje & Crecimiento</div>
+          <div class="kpi-value" style="color:#F59E0B">4 KPIs</div>
+          <div class="kpi-delta up">▲ Formación continua</div>
+        </div>
+      </div>
+
+      <div class="cmi-grid">
+        <div class="perspective-card fin">
+          <div class="persp-label fin">Perspectiva 1</div>
+          <div class="persp-title">Financiera</div>
+          <div class="kpi-row-small">
+            <div class="kpi-item"><span class="kpi-item-name">Crecimiento Ingresos</span><div style="text-align:right"><div class="kpi-item-val">+15%</div><div class="kpi-item-trend">Meta anual</div></div></div>
+            <div class="kpi-item"><span class="kpi-item-name">Margen EBITDA</span><div style="text-align:right"><div class="kpi-item-val">32%</div><div class="kpi-item-trend">Objetivo 2026</div></div></div>
+            <div class="kpi-item"><span class="kpi-item-name">ROI Inversión BI</span><div style="text-align:right"><div class="kpi-item-val">280%</div><div class="kpi-item-trend">3 años</div></div></div>
+            <div class="kpi-item"><span class="kpi-item-name">Coste por Cliente</span><div style="text-align:right"><div class="kpi-item-val">€45</div><div class="kpi-item-trend down">▼ reducir 20%</div></div></div>
+          </div>
+        </div>
+        <div class="perspective-card cli">
+          <div class="persp-label cli">Perspectiva 2</div>
+          <div class="persp-title">Clientes</div>
+          <div class="kpi-row-small">
+            <div class="kpi-item"><span class="kpi-item-name">Satisfacción Cliente (CSAT)</span><div style="text-align:right"><div class="kpi-item-val">85/100</div><div class="kpi-item-trend">Meta 2026</div></div></div>
+            <div class="kpi-item"><span class="kpi-item-name">Tasa Retención</span><div style="text-align:right"><div class="kpi-item-val">78%</div><div class="kpi-item-trend">+8pp YoY</div></div></div>
+            <div class="kpi-item"><span class="kpi-item-name">NPS Score</span><div style="text-align:right"><div class="kpi-item-val">+42</div><div class="kpi-item-trend">Promotores</div></div></div>
+            <div class="kpi-item"><span class="kpi-item-name">Clientes Internacionales</span><div style="text-align:right"><div class="kpi-item-val">25%</div><div class="kpi-item-trend">Expansión EU</div></div></div>
+          </div>
+        </div>
+        <div class="perspective-card pro">
+          <div class="persp-label pro">Perspectiva 3</div>
+          <div class="persp-title">Procesos Internos</div>
+          <div class="kpi-row-small">
+            <div class="kpi-item"><span class="kpi-item-name">Tiempo Producción/Unidad</span><div style="text-align:right"><div class="kpi-item-val">4.2h</div><div class="kpi-item-trend down">▼ objetivo 3.5h</div></div></div>
+            <div class="kpi-item"><span class="kpi-item-name">Tasa Defectos</span><div style="text-align:right"><div class="kpi-item-val">1.8%</div><div class="kpi-item-trend">Meta &lt;1%</div></div></div>
+            <div class="kpi-item"><span class="kpi-item-name">On-Time Delivery</span><div style="text-align:right"><div class="kpi-item-val">91%</div><div class="kpi-item-trend">+3pp YoY</div></div></div>
+            <div class="kpi-item"><span class="kpi-item-name">Utilización Recursos</span><div style="text-align:right"><div class="kpi-item-val">94%</div><div class="kpi-item-trend">Valor corporativo</div></div></div>
+          </div>
+        </div>
+        <div class="perspective-card apr">
+          <div class="persp-label apr">Perspectiva 4</div>
+          <div class="persp-title">Aprendizaje & Crecimiento</div>
+          <div class="kpi-row-small">
+            <div class="kpi-item"><span class="kpi-item-name">Horas Formación/Empleado</span><div style="text-align:right"><div class="kpi-item-val">40h</div><div class="kpi-item-trend">Anual mínimo</div></div></div>
+            <div class="kpi-item"><span class="kpi-item-name">Satisfacción Empleados</span><div style="text-align:right"><div class="kpi-item-val">82%</div><div class="kpi-item-trend">eNPS positivo</div></div></div>
+            <div class="kpi-item"><span class="kpi-item-name">Adopción Herramientas BI</span><div style="text-align:right"><div class="kpi-item-val">100%</div><div class="kpi-item-trend">Meta 2026 Q2</div></div></div>
+            <div class="kpi-item"><span class="kpi-item-name">Índice Innovación</span><div style="text-align:right"><div class="kpi-item-val">3 proyectos</div><div class="kpi-item-trend">Nuevos/año</div></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-title">Proyección KPIs Financieros — Plan Estratégico 2026–2040</div>
+          <div class="chart-subtitle">Tres horizontes: Corto (2026-28) · Medio (2029-34) · Largo (2035-40)</div>
+        </div>
+        <div class="chart-wrap tall">
+          <canvas id="chartProjection"></canvas>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+// ═══ DATA ═══
+const DATA = {
+  scoreDist: {labels:['0-20','21-40','41-60','61-80','81-100'],values:[353,381,485,353,393]},
+  gender: {male:814,female:1186},
+  profCount: {Healthcare:339,Engineer:179,Lawyer:142,Entertainment:234,Artist:612,Executive:153,Doctor:161,Homemaker:60,Marketing:85},
+  ageBrackets: {'18-25':507,'26-35':228,'36-45':198,'46-55':199,'56-65':206,'66+':627},
+  profIncome: {Healthcare:112574,Engineer:111161,Lawyer:110996,Entertainment:110650,Artist:108777,Executive:113770,Doctor:111573,Homemaker:108759,Marketing:107994},
+  profScore: {Healthcare:50.5,Engineer:49.0,Lawyer:48.9,Entertainment:52.9,Artist:52.7,Executive:49.9,Doctor:51.9,Homemaker:46.4,Marketing:48.7},
+  familyIncome: [108721,104456,106263,109233,114537,119161,117994],
+  familyScore: [49.6,50.5,51.9,52.8,52.5,49.9,50.5],
+  workExp: {0:424,1:466,2:61,3:53,4:121,5:112,6:119,7:120,8:164,9:157,'10+':168},
+  salesEvol: {
+    labels:['Ene 03','Mar 03','Jun 03','Sep 03','Dic 03','Mar 04','Jun 04','Sep 04','Dic 04','Mar 05','Jun 05','Sep 05','Dic 05'],
+    values:[85000,120000,145000,178000,310000,95000,130000,165000,280000,110000,140000,170000,265000]
+  },
+  productLine: {
+    labels:['Classic Cars','Vintage Cars','Motorcycles','Trucks & Buses','Planes','Ships','Trains'],
+    values:[1797559,1024113,645408,364445,975004,663998,226243]
+  },
+  scatter: [{"x":133614,"y":58,"g":"Female","p":"Artist"},{"x":7000,"y":28,"g":"Male","p":"Healthcare"},{"x":97000,"y":60,"g":"Male","p":"Artist"},{"x":107323,"y":1,"g":"Female","p":"Engineer"},{"x":112247,"y":24,"g":"Female","p":"Executive"},{"x":145000,"y":75,"g":"Female","p":"Lawyer"},{"x":89000,"y":90,"g":"Male","p":"Doctor"},{"x":55000,"y":45,"g":"Female","p":"Healthcare"},{"x":170000,"y":15,"g":"Male","p":"Engineer"},{"x":98000,"y":80,"g":"Female","p":"Artist"},{"x":45000,"y":65,"g":"Male","p":"Entertainment"},{"x":130000,"y":40,"g":"Female","p":"Executive"},{"x":78000,"y":95,"g":"Female","p":"Healthcare"},{"x":160000,"y":10,"g":"Male","p":"Lawyer"},{"x":92000,"y":72,"g":"Female","p":"Doctor"},{"x":35000,"y":55,"g":"Male","p":"Artist"},{"x":185000,"y":5,"g":"Male","p":"Executive"},{"x":67000,"y":88,"g":"Female","p":"Engineer"},{"x":112000,"y":50,"g":"Male","p":"Marketing"},{"x":145000,"y":30,"g":"Female","p":"Healthcare"},{"x":23000,"y":70,"g":"Male","p":"Artist"},{"x":98000,"y":85,"g":"Female","p":"Entertainment"},{"x":155000,"y":20,"g":"Male","p":"Doctor"},{"x":72000,"y":60,"g":"Female","p":"Homemaker"},{"x":118000,"y":45,"g":"Male","p":"Lawyer"},{"x":88000,"y":78,"g":"Female","p":"Artist"},{"x":140000,"y":35,"g":"Male","p":"Executive"},{"x":60000,"y":92,"g":"Female","p":"Healthcare"},{"x":175000,"y":8,"g":"Male","p":"Engineer"},{"x":95000,"y":68,"g":"Female","p":"Doctor"},{"x":42000,"y":55,"g":"Male","p":"Marketing"},{"x":120000,"y":42,"g":"Female","p":"Lawyer"},{"x":80000,"y":82,"g":"Male","p":"Artist"},{"x":165000,"y":18,"g":"Female","p":"Executive"},{"x":55000,"y":74,"g":"Male","p":"Healthcare"},{"x":135000,"y":28,"g":"Female","p":"Engineer"},{"x":70000,"y":90,"g":"Male","p":"Entertainment"},{"x":100000,"y":55,"g":"Female","p":"Artist"},{"x":148000,"y":22,"g":"Male","p":"Lawyer"},{"x":85000,"y":78,"g":"Female","p":"Doctor"}]
+};
+
+// ═══ COLORS ═══
+const C = {
+  blue:'#2563EB', green:'#10B981', amber:'#F59E0B', red:'#EF4444',
+  purple:'#8B5CF6', cyan:'#06B6D4', pink:'#EC4899', orange:'#F97316',
+  blues:['#DBEAFE','#BFDBFE','#93C5FD','#60A5FA','#3B82F6','#2563EB','#1D4ED8'],
+  multi:['#2563EB','#10B981','#F59E0B','#EF4444','#8B5CF6','#06B6D4','#EC4899','#F97316','#84CC16']
+};
+
+const defaultOpts = {
+  responsive:true,
+  maintainAspectRatio:true,
+  plugins:{legend:{labels:{font:{family:'Plus Jakarta Sans',size:11},boxWidth:10,padding:12}},tooltip:{titleFont:{family:'Plus Jakarta Sans',size:12},bodyFont:{family:'Plus Jakarta Sans',size:11}}},
+  scales:{x:{grid:{display:false},ticks:{font:{family:'Plus Jakarta Sans',size:11}}},y:{grid:{color:'#F1F5F9'},ticks:{font:{family:'Plus Jakarta Sans',size:11}}}}
+};
+
+function noScales(){return {scales:{x:{display:false},y:{display:false}}}}
+
+// ═══ CHARTS ═══
+function buildCharts(){
+
+  // Overview: Score Dist
+  new Chart(document.getElementById('chartScoreDist'),{type:'bar',data:{labels:DATA.scoreDist.labels,datasets:[{label:'Clientes',data:DATA.scoreDist.values,backgroundColor:['#DBEAFE','#BFDBFE','#93C5FD','#60A5FA','#2563EB'],borderRadius:5,borderSkipped:false}]},options:{...defaultOpts,plugins:{...defaultOpts.plugins,legend:{display:false}}}});
+
+  // Overview: Gender donut
+  new Chart(document.getElementById('chartGender'),{type:'doughnut',data:{labels:['Femenino (59.3%)','Masculino (40.7%)'],datasets:[{data:[1186,814],backgroundColor:['#2563EB','#60A5FA'],borderWidth:0,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:true,cutout:'65%',plugins:{legend:{position:'bottom',labels:{font:{family:'Plus Jakarta Sans',size:11},boxWidth:10}}}}});
+
+  // Overview: Prof count bars
+  new Chart(document.getElementById('chartProfCount'),{type:'bar',data:{labels:Object.keys(DATA.profCount),datasets:[{label:'Clientes',data:Object.values(DATA.profCount),backgroundColor:C.multi,borderRadius:4,borderSkipped:false}]},options:{...defaultOpts,indexAxis:'y',plugins:{...defaultOpts.plugins,legend:{display:false}}}});
+
+  // Overview: Age bar
+  new Chart(document.getElementById('chartAge'),{type:'bar',data:{labels:Object.keys(DATA.ageBrackets),datasets:[{label:'Clientes',data:Object.values(DATA.ageBrackets),backgroundColor:['#DBEAFE','#93C5FD','#60A5FA','#3B82F6','#2563EB','#1D4ED8'],borderRadius:5,borderSkipped:false}]},options:{...defaultOpts,plugins:{...defaultOpts.plugins,legend:{display:false}}}});
+
+  // Customers: Scatter
+  const scatterF = DATA.scatter.filter(d=>d.g==='Female').map(d=>({x:d.x,y:d.y}));
+  const scatterM = DATA.scatter.filter(d=>d.g==='Male').map(d=>({x:d.x,y:d.y}));
+  new Chart(document.getElementById('chartScatter'),{type:'scatter',data:{datasets:[{label:'Femenino',data:scatterF,backgroundColor:'rgba(37,99,235,0.5)',pointRadius:5,pointHoverRadius:7},{label:'Masculino',data:scatterM,backgroundColor:'rgba(245,158,11,0.5)',pointRadius:5,pointHoverRadius:7}]},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{labels:{font:{family:'Plus Jakarta Sans',size:11},boxWidth:8}}},scales:{x:{title:{display:true,text:'Annual Income ($)',font:{family:'Plus Jakarta Sans',size:11}},grid:{color:'#F1F5F9'},ticks:{font:{family:'Plus Jakarta Sans',size:10},callback:v=>v>=1000?'$'+(v/1000).toFixed(0)+'K':'$'+v}},y:{title:{display:true,text:'Spending Score',font:{family:'Plus Jakarta Sans',size:11}},grid:{color:'#F1F5F9'},ticks:{font:{family:'Plus Jakarta Sans',size:10}},min:0,max:100}}}});
+
+  // Customers: Family income
+  new Chart(document.getElementById('chartFamilyIncome'),{type:'bar',data:{labels:['1','2','3','4','5','6','7'],datasets:[{label:'Income Promedio ($)',data:DATA.familyIncome,backgroundColor:C.blues,borderRadius:4,borderSkipped:false}]},options:{...defaultOpts,plugins:{...defaultOpts.plugins,legend:{display:false}},scales:{x:{...defaultOpts.scales.x,title:{display:true,text:'Tamaño Familiar',font:{family:'Plus Jakarta Sans',size:10}}},y:{...defaultOpts.scales.y,ticks:{...defaultOpts.scales.y.ticks,callback:v=>'$'+(v/1000).toFixed(0)+'K'}}}}});
+
+  // Customers: Family score
+  new Chart(document.getElementById('chartFamilyScore'),{type:'line',data:{labels:['1','2','3','4','5','6','7'],datasets:[{label:'Spending Score',data:DATA.familyScore,borderColor:C.green,backgroundColor:'rgba(16,185,129,.1)',borderWidth:2.5,pointBackgroundColor:C.green,pointRadius:5,fill:true,tension:.4}]},options:{...defaultOpts,plugins:{...defaultOpts.plugins,legend:{display:false}},scales:{x:{...defaultOpts.scales.x,title:{display:true,text:'Tamaño Familiar',font:{family:'Plus Jakarta Sans',size:10}}},y:{...defaultOpts.scales.y,min:45,max:55}}}});
+
+  // Professions: income
+  new Chart(document.getElementById('chartProfIncome'),{type:'bar',data:{labels:Object.keys(DATA.profIncome),datasets:[{label:'Income Promedio ($)',data:Object.values(DATA.profIncome),backgroundColor:C.multi,borderRadius:4,borderSkipped:false}]},options:{...defaultOpts,indexAxis:'y',plugins:{...defaultOpts.plugins,legend:{display:false}},scales:{x:{...defaultOpts.scales.x,ticks:{...defaultOpts.scales.x.ticks,callback:v=>'$'+(v/1000).toFixed(0)+'K'}},y:{grid:{display:false},ticks:{font:{family:'Plus Jakarta Sans',size:11}}}}}});
+
+  // Professions: score
+  new Chart(document.getElementById('chartProfScore'),{type:'bar',data:{labels:Object.keys(DATA.profScore),datasets:[{label:'Spending Score Avg',data:Object.values(DATA.profScore),backgroundColor:C.multi,borderRadius:4,borderSkipped:false}]},options:{...defaultOpts,indexAxis:'y',plugins:{...defaultOpts.plugins,legend:{display:false}},scales:{x:{...defaultOpts.scales.x,min:44,max:56},y:{grid:{display:false},ticks:{font:{family:'Plus Jakarta Sans',size:11}}}}}});
+
+  // Profession table
+  const profs = Object.keys(DATA.profCount);
+  const tbody = document.getElementById('profTable');
+  const colors = ['pill-blue','pill-green','pill-purple','pill-amber','pill-red','pill-blue','pill-green','pill-purple','pill-amber'];
+  profs.forEach((p,i)=>{
+    const count = DATA.profCount[p]; const total=1965;
+    const inc = DATA.profIncome[p]; const sc = DATA.profScore[p];
+    const pct = ((count/total)*100).toFixed(1);
+    const row = document.createElement('tr');
+    row.innerHTML = `<td><strong>${i+1}</strong></td><td><span class="pill ${colors[i]}">${p}</span></td><td>${count.toLocaleString()}</td><td>$${(inc/1000).toFixed(1)}K</td><td>${sc}</td><td>${pct}%</td><td><div class="score-bar-wrap"><div class="score-bar"><div class="score-bar-fill" style="width:${pct*5}%"></div></div><span style="font-size:11px;color:var(--text-muted)">${pct}%</span></div></td>`;
+    tbody.appendChild(row);
+  });
+
+  // Demographics
+  new Chart(document.getElementById('chartAgeDemog'),{type:'bar',data:{labels:Object.keys(DATA.ageBrackets),datasets:[{label:'Clientes',data:Object.values(DATA.ageBrackets),backgroundColor:['#DBEAFE','#93C5FD','#60A5FA','#3B82F6','#2563EB','#1D4ED8'],borderRadius:5,borderSkipped:false}]},options:{...defaultOpts,plugins:{...defaultOpts.plugins,legend:{display:false}}}});
+  new Chart(document.getElementById('chartWorkExp'),{type:'bar',data:{labels:Object.keys(DATA.workExp),datasets:[{label:'Clientes',data:Object.values(DATA.workExp),backgroundColor:C.green,borderRadius:4,borderSkipped:false}]},options:{...defaultOpts,plugins:{...defaultOpts.plugins,legend:{display:false}},scales:{x:{...defaultOpts.scales.x,title:{display:true,text:'Años de experiencia',font:{family:'Plus Jakarta Sans',size:10}}},y:{...defaultOpts.scales.y}}}});
+
+  // ClassicModels: Sales evolution
+  new Chart(document.getElementById('chartSalesEvol'),{type:'line',data:{labels:DATA.salesEvol.labels,datasets:[{label:'Ventas ($)',data:DATA.salesEvol.values,borderColor:C.blue,backgroundColor:'rgba(37,99,235,.08)',borderWidth:2.5,pointBackgroundColor:C.blue,pointRadius:4,fill:true,tension:.4}]},options:{...defaultOpts,plugins:{...defaultOpts.plugins,legend:{display:false}},scales:{x:{...defaultOpts.scales.x},y:{...defaultOpts.scales.y,ticks:{...defaultOpts.scales.y.ticks,callback:v=>'$'+(v/1000).toFixed(0)+'K'}}}}});
+
+  // ClassicModels: Product lines
+  new Chart(document.getElementById('chartProductLine'),{type:'bar',data:{labels:DATA.productLine.labels,datasets:[{label:'Ventas ($)',data:DATA.productLine.values,backgroundColor:C.multi,borderRadius:5,borderSkipped:false}]},options:{...defaultOpts,indexAxis:'y',plugins:{...defaultOpts.plugins,legend:{display:false}},scales:{x:{...defaultOpts.scales.x,ticks:{callback:v=>'$'+(v/1000000).toFixed(1)+'M'}},y:{grid:{display:false},ticks:{font:{family:'Plus Jakarta Sans',size:11}}}}}});
+
+  // CMI: Projection
+  new Chart(document.getElementById('chartProjection'),{type:'line',data:{labels:['2026','2027','2028','2029','2030','2031','2032','2033','2034','2035','2036','2037','2038','2039','2040'],datasets:[{label:'Ingresos (€K)',data:[120,138,159,183,210,242,278,320,368,423,487,560,644,741,852],borderColor:C.blue,backgroundColor:'rgba(37,99,235,.07)',borderWidth:2.5,pointRadius:3,fill:true,tension:.4},{label:'Clientes',data:[150,180,216,259,311,373,448,537,645,774,929,1115,1338,1605,1926],borderColor:C.green,backgroundColor:'rgba(16,185,129,.05)',borderWidth:2,pointRadius:3,fill:true,tension:.4},{label:'Margen % (×10)',data:[280,300,310,320,330,340,345,350,355,358,360,362,364,366,368],borderColor:C.amber,borderWidth:2,pointRadius:3,tension:.4,fill:false}]},options:{...defaultOpts,scales:{x:{...defaultOpts.scales.x,grid:{display:false}},y:{...defaultOpts.scales.y}}}});
+}
+
+// ═══ NAVIGATION ═══
+function setView(id, el){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('view-'+id).classList.add('active');
+  el.classList.add('active');
+  const titles = {overview:'Overview General',customers:'Clientes — Dataset Kaggle',professions:'Análisis por Profesión',demographics:'Demografía & Segmentación',classicmodels:'ClassicModels — Estructura SQL',starschema:'Modelo Estrella',cmi:'CMI / Cuadro de Mando Integral'};
+  document.getElementById('pageTitle').textContent = titles[id]||id;
+}
+
+function setDataSource(ds, el){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelector('.topbar-right .badge').textContent = ds==='kaggle'?'2,000 registros':'8 tablas SQL';
+}
+
+// ═══ INIT ═══
+window.addEventListener('load', buildCharts);
+</script>
+</body>
+</html>
